@@ -3,6 +3,7 @@ package dev.pedrocarrara.sysAcademy.dto;
 import dev.pedrocarrara.sysAcademy.entity.Aluno;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
@@ -14,7 +15,7 @@ public record AlunoRequest(
 
         @Size(min = 11, max = 11, message = "CPF deve ter 11 caracteres")
         String cpf,
-
+        @Past(message = "data de nascimento deve estar no passado")
         LocalDate dataNascimento,
 
         @Size(max = 1, message = "Sexo deve ter no maximo 1 caractere")
