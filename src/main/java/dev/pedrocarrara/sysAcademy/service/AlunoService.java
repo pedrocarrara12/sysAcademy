@@ -3,6 +3,7 @@ package dev.pedrocarrara.sysAcademy.service;
 import dev.pedrocarrara.sysAcademy.dto.AlunoRequest;
 import dev.pedrocarrara.sysAcademy.dto.AlunoResponse;
 import dev.pedrocarrara.sysAcademy.entity.Aluno;
+import dev.pedrocarrara.sysAcademy.exception.RegraDeNegocioException;
 import dev.pedrocarrara.sysAcademy.repository.AlunoRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,21 +14,19 @@ public class AlunoService {
 
     private final AlunoRepository alunoRepository;
 
-
     public AlunoService(AlunoRepository alunoRepository) {
         this.alunoRepository = alunoRepository;
     }
 
     public AlunoResponse cadastroAluno(AlunoRequest aluno) {
         if (aluno.email() != null && alunoRepository.existsByEmail(aluno.email())) {
-            throw new RuntimeException("Já existe um aluno com esse email");
-
+            throw new RegraDeNegocioException("Ja existe um aluno com esse email");
         }
-        Aluno aluno1 = aluno.toEntity();
-        Aluno aluno2 = alunoRepository.save(aluno1);
-        return AlunoResponse.fromEntity(aluno2);
 
+        Aluno alunoSalvo = alunoRepository.save(aluno.toEntity());
+        return AlunoResponse.fromEntity(alunoSalvo);
     }
+
     public Page<AlunoResponse> listarAlunos(Pageable pageable) {
         return alunoRepository.findAll(pageable).map(AlunoResponse::fromEntity);
     }
@@ -43,7 +42,7 @@ public class AlunoService {
         if (request.email() != null
                 && !request.email().equals(aluno.getEmail())
                 && alunoRepository.existsByEmail(request.email())) {
-            throw new RuntimeException("Ja existe um aluno com esse email");
+            throw new RegraDeNegocioException("Ja existe um aluno com esse email");
         }
 
         request.applyToEntity(aluno);
@@ -58,6 +57,6 @@ public class AlunoService {
 
     private Aluno buscarEntidadePorId(Long id) {
         return alunoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Aluno nao encontrado"));
+                .orElseThrow(() -> new RegraDeNegocioException("Aluno nao encontrado"));
     }
 }
