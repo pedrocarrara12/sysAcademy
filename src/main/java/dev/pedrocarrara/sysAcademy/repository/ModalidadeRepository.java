@@ -10,4 +10,6 @@ public interface ModalidadeRepository extends JpaRepository<Modalidade, Long> {
     Optional<Modalidade> findByNomeIgnoreCase(String nome);
 
     List<Modalidade> findByAtivaTrue();
+
+    Optional<Modalidade> findByNome(String nome);
 }

@@ -1,10 +1,12 @@
 package dev.pedrocarrara.sysAcademy.service;
 
+import dev.pedrocarrara.sysAcademy.dto.AlunoFiltro;
 import dev.pedrocarrara.sysAcademy.dto.AlunoRequest;
 import dev.pedrocarrara.sysAcademy.dto.AlunoResponse;
 import dev.pedrocarrara.sysAcademy.entity.Aluno;
 import dev.pedrocarrara.sysAcademy.exception.RegraDeNegocioException;
 import dev.pedrocarrara.sysAcademy.repository.AlunoRepository;
+import dev.pedrocarrara.sysAcademy.specification.AlunoSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,8 +29,9 @@ public class AlunoService {
         return AlunoResponse.fromEntity(alunoSalvo);
     }
 
-    public Page<AlunoResponse> listarAlunos(Pageable pageable) {
-        return alunoRepository.findAll(pageable).map(AlunoResponse::fromEntity);
+    public Page<AlunoResponse> listarAlunos(AlunoFiltro filtro, Pageable pageable) {
+        return alunoRepository.findAll(AlunoSpecification.comFiltros(filtro), pageable)
+                .map(AlunoResponse::fromEntity);
     }
 
     public AlunoResponse buscarPorId(Long id) {

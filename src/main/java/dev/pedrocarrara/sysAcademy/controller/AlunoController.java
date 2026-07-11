@@ -1,5 +1,6 @@
 package dev.pedrocarrara.sysAcademy.controller;
 
+import dev.pedrocarrara.sysAcademy.dto.AlunoFiltro;
 import dev.pedrocarrara.sysAcademy.dto.AlunoRequest;
 import dev.pedrocarrara.sysAcademy.dto.AlunoResponse;
 import dev.pedrocarrara.sysAcademy.service.AlunoService;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -41,8 +43,8 @@ public class AlunoController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<AlunoResponse>> listar(Pageable pageable) {
-        return ResponseEntity.ok(alunoService.listarAlunos(pageable));
+    public ResponseEntity<Page<AlunoResponse>> listar(@ModelAttribute AlunoFiltro filtro, Pageable pageable) {
+        return ResponseEntity.ok(alunoService.listarAlunos(filtro, pageable));
     }
 
     @GetMapping("/{id}")

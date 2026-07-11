@@ -24,6 +24,11 @@ public class Modalidade {
     public Modalidade() {
     }
 
+    public Modalidade(String nome, Boolean ativa) {
+        this.nome = nome;
+        this.ativa = ativa;
+    }
+
     @PrePersist
     public void prePersist() {
         if (ativa == null) {
