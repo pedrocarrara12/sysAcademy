@@ -15,6 +15,13 @@ import java.util.List;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(ModalidadeNotFound.class)
+    public ResponseEntity<ErroResponse> tratarModalidadeNaoEncontrada(ModalidadeNotFound exception) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        ErroResponse erro = new ErroResponse(status.value(), status.getReasonPhrase(), exception.getMessage());
+        return ResponseEntity.status(status).body(erro);
+    }
+
     @ExceptionHandler(RegraDeNegocioException.class)
     public ResponseEntity<ErroResponse> tratarRegraDeNegocio(RegraDeNegocioException exception) {
         HttpStatus status = HttpStatus.BAD_REQUEST;

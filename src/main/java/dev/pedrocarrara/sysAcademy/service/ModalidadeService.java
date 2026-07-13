@@ -22,13 +22,14 @@ public class ModalidadeService {
     public ModalidadeService(ModalidadeRepository modalidadeRepository) {
         this.modalidadeRepository = modalidadeRepository;
     }
+
     @Transactional
     public ModalidadeResponse criarModalidade(ModalidadeRequest modalidadeRequest) {
         Optional<Modalidade> modalidadeExistente =
-                modalidadeRepository.findByNome(modalidadeRequest.nome());
+                modalidadeRepository.findByNomeIgnoreCase(modalidadeRequest.nome());
 
         if (modalidadeExistente.isPresent()) {
-            throw new RegraDeNegocioException("JÃ¡ existe uma modalidade com esse nome.");
+            throw new RegraDeNegocioException("Ja existe uma modalidade com esse nome.");
         }
 
         Modalidade modalidade = new Modalidade(
@@ -39,12 +40,13 @@ public class ModalidadeService {
         Modalidade modalidadeSalva = modalidadeRepository.save(modalidade);
         return ModalidadeResponse.fromEntity(modalidadeSalva);
     }
+
     @Transactional(readOnly = true)
     public ModalidadeResponse buscarPorId(Long id) {
-        Modalidade modalidade = modalidadeRepository.findById(id).orElseThrow(() -> new ModalidadeNotFound("" +
-                "NÃ£o foi encontrado uma modalidade com esse id."));
+        Modalidade modalidade = buscarEntidadeModalidadeId(id);
         return ModalidadeResponse.fromEntity(modalidade);
     }
+
     @Transactional(readOnly = true)
     public Page<ModalidadeResponse> buscarTodos(String nome, Boolean ativa, Pageable pageable) {
         Specification<Modalidade> specification = Specification.where(ModalidadeSpecification.nomeContem(nome))
@@ -53,22 +55,30 @@ public class ModalidadeService {
         return modalidadeRepository.findAll(specification, pageable)
                 .map(ModalidadeResponse::fromEntity);
     }
+
     @Transactional
-    public ModalidadeResponse atualizarModalidade(Long id,ModalidadeRequest modalidadeRequest) {
+    public ModalidadeResponse atualizarModalidade(Long id, ModalidadeRequest modalidadeRequest) {
         Modalidade modalidade = buscarEntidadeModalidadeId(id);
+
+        modalidadeRepository.findByNomeIgnoreCase(modalidadeRequest.nome())
+                .filter(modalidadeExistente -> !modalidadeExistente.getId().equals(id))
+                .ifPresent(modalidadeExistente -> {
+                    throw new RegraDeNegocioException("Ja existe uma modalidade com esse nome.");
+                });
+
         modalidade.setNome(modalidadeRequest.nome());
         modalidade.setAtiva(modalidadeRequest.ativa());
         return ModalidadeResponse.fromEntity(modalidade);
-
     }
-    private Modalidade buscarEntidadeModalidadeId(Long id) {
-        Modalidade modalidade = modalidadeRepository.findById(id).orElseThrow(() -> new ModalidadeNotFound("" +
-                "NÃ£o foi encontrado uma modalidade com esse id."));
-        return modalidade;
 
-    }
+    @Transactional
     public void desativarModalidade(Long id) {
         Modalidade modalidade = buscarEntidadeModalidadeId(id);
         modalidade.setAtiva(false);
+    }
+
+    private Modalidade buscarEntidadeModalidadeId(Long id) {
+        return modalidadeRepository.findById(id)
+                .orElseThrow(() -> new ModalidadeNotFound("Nao foi encontrada uma modalidade com esse id."));
     }
 }
