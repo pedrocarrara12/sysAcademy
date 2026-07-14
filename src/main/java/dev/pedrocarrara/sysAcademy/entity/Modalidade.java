@@ -1,12 +1,9 @@
 package dev.pedrocarrara.sysAcademy.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "modalidades")
@@ -20,6 +17,9 @@ public class Modalidade {
 
     @Column(nullable = false)
     private Boolean ativa;
+
+    @OneToMany(mappedBy = "modalidade", fetch = FetchType.LAZY)
+    List<Graduacao> listaGraduacao = new ArrayList<>();
 
     public Modalidade() {
     }
