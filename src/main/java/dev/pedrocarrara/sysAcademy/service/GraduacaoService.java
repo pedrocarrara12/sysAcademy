@@ -70,8 +70,27 @@ public class GraduacaoService {
         graduacaoRepository.delete(graduacao);
     }
 
+    @Transactional
     public GraduacaoResponse atualizarGraduacao(Long id, GraduacaoRequest graduacaoRequest) {
+        Graduacao graduacao = graduacaoRepository.findById(id)
+                .orElseThrow(() -> new RegraDeNegocioException("Graduacao Id nao encontrada."));
 
+        validarNomeDuplicadoAtualizacao(id, graduacaoRequest.nome());
 
+        Modalidade modalidade = getModalidade(graduacaoRequest);
+        graduacao.setNome(graduacaoRequest.nome());
+        graduacao.setModalidade(modalidade);
+
+        return GraduacaoResponse.fromEntity(graduacaoRepository.save(graduacao));
+    }
+
+    private void validarNomeDuplicadoAtualizacao(Long id, String nome) {
+        if (graduacaoRepository.existsByNomeIgnoreCase(nome)
+                && !graduacaoRepository.findById(id)
+                .map(Graduacao::getNome)
+                .filter(nomeAtual -> nomeAtual.equalsIgnoreCase(nome))
+                .isPresent()) {
+            throw new RegraDeNegocioException("JÃƒÂ¡ existe uma graduacao com esse nome.");
+        }
     }
 }
