@@ -8,12 +8,11 @@ import dev.pedrocarrara.sysAcademy.exception.RegraDeNegocioException;
 import dev.pedrocarrara.sysAcademy.repository.GraduacaoRepository;
 import dev.pedrocarrara.sysAcademy.repository.ModalidadeRepository;
 import dev.pedrocarrara.sysAcademy.specification.GraduacaoSpecification;
-import jakarta.transaction.Transactional;
-import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GraduacaoService {
@@ -28,27 +27,18 @@ public class GraduacaoService {
 
     @Transactional
     public GraduacaoResponse criarGraduacao(GraduacaoRequest graduacaoRequest) {
-        validarNomeDuplicado(graduacaoRequest.nome());
+        Modalidade modalidade = buscarModalidadePorId(graduacaoRequest.modalidadeId());
+        validarNomeDuplicadoNaModalidade(graduacaoRequest.modalidadeId(), graduacaoRequest.nome(), null);
 
-        Modalidade modalidade = getModalidade(graduacaoRequest);
         Graduacao graduacao = new Graduacao();
         graduacao.setModalidade(modalidade);
         graduacao.setNome(graduacaoRequest.nome());
-        return GraduacaoResponse.fromEntity(graduacaoRepository.save(graduacao));
+
+        Graduacao graduacaoSalva = graduacaoRepository.save(graduacao);
+        return GraduacaoResponse.fromEntity(graduacaoSalva);
     }
 
-    private @NonNull Modalidade getModalidade(GraduacaoRequest graduacaoRequest) {
-        Modalidade modalidade = modalidadeRepository.findById(graduacaoRequest.modalidadeId())
-                .orElseThrow(() -> new RegraDeNegocioException("Modalidade nÃ£o encontrada."));
-        return modalidade;
-    }
-
-    private void validarNomeDuplicado(String nome) {
-        if (graduacaoRepository.existsByNomeIgnoreCase(nome)) {
-            throw new RegraDeNegocioException("JÃ¡ existe uma graduacao com esse nome.");
-        }
-    }
-
+    @Transactional(readOnly = true)
     public Page<GraduacaoResponse> listarGraduacoes(Pageable pageable, Long idModalidade, String nome) {
         Specification<Graduacao> specification = Specification.where(
                 GraduacaoSpecification.modalidadeIdIgual(idModalidade)
@@ -58,39 +48,46 @@ public class GraduacaoService {
                 .map(GraduacaoResponse::fromEntity);
     }
 
-    public GraduacaoResponse listarGraducoesPorId(Long id) {
-        return GraduacaoResponse.fromEntity(graduacaoRepository.findById(id).orElseThrow(() -> new RegraDeNegocioException(
-                "Graduacao Id nao encontrada."
-        )));
-    }
-
-    public void excluirGraduacao(Long id) {
-        Graduacao graduacao = graduacaoRepository.findById(id).orElseThrow(() ->
-                new RegraDeNegocioException("Graduacao Id nao encontrada."));
-        graduacaoRepository.delete(graduacao);
+    @Transactional(readOnly = true)
+    public GraduacaoResponse buscarPorId(Long id) {
+        Graduacao graduacao = buscarGraduacaoPorId(id);
+        return GraduacaoResponse.fromEntity(graduacao);
     }
 
     @Transactional
     public GraduacaoResponse atualizarGraduacao(Long id, GraduacaoRequest graduacaoRequest) {
-        Graduacao graduacao = graduacaoRepository.findById(id)
-                .orElseThrow(() -> new RegraDeNegocioException("Graduacao Id nao encontrada."));
+        Graduacao graduacao = buscarGraduacaoPorId(id);
+        Modalidade modalidade = buscarModalidadePorId(graduacaoRequest.modalidadeId());
 
-        validarNomeDuplicadoAtualizacao(id, graduacaoRequest.nome());
+        validarNomeDuplicadoNaModalidade(graduacaoRequest.modalidadeId(), graduacaoRequest.nome(), id);
 
-        Modalidade modalidade = getModalidade(graduacaoRequest);
         graduacao.setNome(graduacaoRequest.nome());
         graduacao.setModalidade(modalidade);
 
-        return GraduacaoResponse.fromEntity(graduacaoRepository.save(graduacao));
+        return GraduacaoResponse.fromEntity(graduacao);
     }
 
-    private void validarNomeDuplicadoAtualizacao(Long id, String nome) {
-        if (graduacaoRepository.existsByNomeIgnoreCase(nome)
-                && !graduacaoRepository.findById(id)
-                .map(Graduacao::getNome)
-                .filter(nomeAtual -> nomeAtual.equalsIgnoreCase(nome))
-                .isPresent()) {
-            throw new RegraDeNegocioException("JÃƒÂ¡ existe uma graduacao com esse nome.");
-        }
+    @Transactional
+    public void excluirGraduacao(Long id) {
+        Graduacao graduacao = buscarGraduacaoPorId(id);
+        graduacaoRepository.delete(graduacao);
+    }
+
+    private Modalidade buscarModalidadePorId(Long modalidadeId) {
+        return modalidadeRepository.findById(modalidadeId)
+                .orElseThrow(() -> new RegraDeNegocioException("Modalidade nao encontrada."));
+    }
+
+    private Graduacao buscarGraduacaoPorId(Long id) {
+        return graduacaoRepository.findById(id)
+                .orElseThrow(() -> new RegraDeNegocioException("Graduacao nao encontrada."));
+    }
+
+    private void validarNomeDuplicadoNaModalidade(Long modalidadeId, String nome, Long graduacaoIdIgnorada) {
+        graduacaoRepository.findByModalidadeIdAndNomeIgnoreCase(modalidadeId, nome)
+                .filter(graduacao -> !graduacao.getId().equals(graduacaoIdIgnorada))
+                .ifPresent(graduacao -> {
+                    throw new RegraDeNegocioException("Ja existe uma graduacao com esse nome nessa modalidade.");
+                });
     }
 }

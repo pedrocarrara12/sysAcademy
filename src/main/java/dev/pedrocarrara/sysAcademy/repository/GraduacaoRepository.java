@@ -11,5 +11,4 @@ public interface GraduacaoRepository extends JpaRepository<Graduacao, Long>, Jpa
     List<Graduacao> findByModalidadeId(Long modalidadeId);
 
     Optional<Graduacao> findByModalidadeIdAndNomeIgnoreCase(Long modalidadeId, String nome);
-    Boolean existsByNomeIgnoreCase(String nome);
 }
