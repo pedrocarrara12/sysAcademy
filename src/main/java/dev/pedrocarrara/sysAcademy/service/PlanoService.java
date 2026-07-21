@@ -64,5 +64,15 @@ public final class PlanoService {
             throw new RegraDeNegocioException("Já existe um plano cadastrado com esse nome.");
         }
         Modalidade modalidade = buscarModalidadePorId(planoRequest.modalidadeId());
+        plano.setModalidade(modalidade);
+        plano.setNome(plano.getNome());
+        plano.setValorMensal(planoRequest.valorMensal());
+        plano.setAtivo(planoRequest.ativo());
+        planoRepository.save(plano);
+        return PlanoResponse.fromEntity(plano);
+    }
+    public void desativarPlano(Long id) {
+        Plano plano = buscarPlanoPorId(id);
+        plano.setAtivo(false);
     }
 }
