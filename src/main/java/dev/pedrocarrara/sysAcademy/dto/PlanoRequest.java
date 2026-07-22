@@ -16,7 +16,7 @@ public record PlanoRequest(
         String nome,
 
         @NotNull(message = "Valor mensal e obrigatorio")
-        @DecimalMin(value = "0.01", message = "Valor mensal deve ser maior que zero")
+        @DecimalMin(value = "0.00", message = "Valor mensal deve ser maior ou igual a zero")
         BigDecimal valorMensal,
 
         Boolean ativo

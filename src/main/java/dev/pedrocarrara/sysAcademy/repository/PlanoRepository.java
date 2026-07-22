@@ -15,6 +15,4 @@ public interface PlanoRepository extends JpaRepository<Plano, Long>, JpaSpecific
     List<Plano> findByModalidadeIdAndAtivoTrue(Long modalidadeId);
 
     Optional<Plano> findByModalidadeIdAndNomeIgnoreCase(Long modalidadeId, String nome);
-
-    boolean existsByNomeIgnoreCase(String nome);
 }
