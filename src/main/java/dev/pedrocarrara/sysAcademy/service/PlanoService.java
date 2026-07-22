@@ -75,4 +75,7 @@ public final class PlanoService {
         Plano plano = buscarPlanoPorId(id);
         plano.setAtivo(false);
     }
+    public PlanoResponse buscarPorId(Long id) {
+        return PlanoResponse.fromEntity(buscarPlanoPorId(id));
+    }
 }
