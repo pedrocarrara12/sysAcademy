@@ -1,7 +1,10 @@
 package dev.pedrocarrara.sysAcademy.entity;
 
+import dev.pedrocarrara.sysAcademy.enums.StatusMatricula;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,7 +37,8 @@ public class Matricula {
     private LocalDate dataEncerramento;
 
     @Column(nullable = false, length = 20)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private StatusMatricula status;
 
     public Matricula() {
     }
@@ -45,7 +49,7 @@ public class Matricula {
             dataMatricula = LocalDate.now();
         }
         if (status == null) {
-            status = "ATIVA";
+            status = StatusMatricula.ATIVA;
         }
     }
 
@@ -89,11 +93,11 @@ public class Matricula {
         this.dataEncerramento = dataEncerramento;
     }
 
-    public String getStatus() {
+    public StatusMatricula getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(StatusMatricula status) {
         this.status = status;
     }
 }

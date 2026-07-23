@@ -18,7 +18,7 @@ public record PlanoRequest(
         @NotNull(message = "Valor mensal e obrigatorio")
         @DecimalMin(value = "0.00", message = "Valor mensal deve ser maior ou igual a zero")
         BigDecimal valorMensal,
-
+        @NotNull(message = "Status do plano e obrigatorio")
         Boolean ativo
 ) {
 }

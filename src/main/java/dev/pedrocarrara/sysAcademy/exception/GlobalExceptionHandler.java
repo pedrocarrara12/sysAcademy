@@ -70,6 +70,12 @@ public class GlobalExceptionHandler {
         ErroResponse erro = new ErroResponse(status.value(), status.getReasonPhrase(), "Erro interno do servidor");
         return ResponseEntity.status(status).body(erro);
     }
+    @ExceptionHandler(PlanoNotFound.class)
+    public ResponseEntity<ErroResponse> tratarPlanoNotFound(PlanoNotFound exception) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        ErroResponse erroResponse = new ErroResponse(status.value(), status.getReasonPhrase(), exception.getMessage());
+        return ResponseEntity.status(status).body(erroResponse);
+    }
 
     private String formatarErroCampo(FieldError erro) {
         return erro.getField() + ": " + erro.getDefaultMessage();

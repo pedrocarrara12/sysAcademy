@@ -5,6 +5,7 @@ import dev.pedrocarrara.sysAcademy.dto.PlanoRequest;
 import dev.pedrocarrara.sysAcademy.dto.PlanoResponse;
 import dev.pedrocarrara.sysAcademy.entity.Modalidade;
 import dev.pedrocarrara.sysAcademy.entity.Plano;
+import dev.pedrocarrara.sysAcademy.exception.PlanoNotFound;
 import dev.pedrocarrara.sysAcademy.exception.RegraDeNegocioException;
 import dev.pedrocarrara.sysAcademy.repository.ModalidadeRepository;
 import dev.pedrocarrara.sysAcademy.repository.PlanoRepository;
@@ -30,6 +31,7 @@ public class PlanoService {
         String nome = planoRequest.nome().trim();
         Modalidade modalidade = buscarModalidadePorId(planoRequest.modalidadeId());
 
+        validarModalidadeAtiva(modalidade);
         validarNomeDuplicadoNaModalidade(modalidade.getId(), nome, null);
 
         Plano plano = new Plano();
@@ -61,6 +63,7 @@ public class PlanoService {
         String nome = planoRequest.nome().trim();
         Modalidade modalidade = buscarModalidadePorId(planoRequest.modalidadeId());
 
+        validarModalidadeAtiva(modalidade);
         validarNomeDuplicadoNaModalidade(modalidade.getId(), nome, id);
 
         plano.setModalidade(modalidade);
@@ -79,12 +82,20 @@ public class PlanoService {
 
     private Plano buscarPlanoPorId(Long id) {
         return planoRepository.findById(id)
-                .orElseThrow(() -> new RegraDeNegocioException("Nao foi encontrado um plano com esse id."));
+                .orElseThrow(() -> new PlanoNotFound("Nao foi encontrado um plano com esse id."));
     }
 
     private Modalidade buscarModalidadePorId(Long id) {
         return modalidadeRepository.findById(id)
                 .orElseThrow(() -> new RegraDeNegocioException("Nao foi encontrada uma modalidade com esse id."));
+    }
+
+    private void validarModalidadeAtiva(Modalidade modalidade) {
+        if (!Boolean.TRUE.equals(modalidade.getAtiva())) {
+            throw new RegraDeNegocioException(
+                    "Nao e permitido cadastrar ou atualizar um plano em uma modalidade inativa."
+            );
+        }
     }
 
     private void validarNomeDuplicadoNaModalidade(Long modalidadeId, String nome, Long planoIdIgnorado) {
