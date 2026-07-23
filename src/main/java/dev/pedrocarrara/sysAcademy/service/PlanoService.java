@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public final class PlanoService {
+public class PlanoService {
     private final PlanoRepository planoRepository;
     private final ModalidadeRepository modalidadeRepository;
 

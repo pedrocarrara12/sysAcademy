@@ -15,7 +15,7 @@ import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
 @RequestMapping("/planos")
-public final class PlanoController {
+public class PlanoController {
 
     private final PlanoService planoService;
 

@@ -15,7 +15,8 @@ public class Aluno {
     @Column(nullable = false, length = 150)
     private String nome;
 
-    @Column(length = 11)
+
+    @Column(length = 11,unique = true)
     private String cpf;
 
     @Column(name = "data_nascimento")
