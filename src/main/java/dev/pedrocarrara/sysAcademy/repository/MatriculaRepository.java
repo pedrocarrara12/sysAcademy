@@ -10,9 +10,9 @@ import java.util.List;
 public interface MatriculaRepository extends JpaRepository<Matricula, Long>, JpaSpecificationExecutor<Matricula> {
     List<Matricula> findByAlunoId(Long alunoId);
 
-    List<Matricula> findByStatus(String status);
+    List<Matricula> findByStatus(StatusMatricula status);
 
-    List<Matricula> findByAlunoIdAndStatus(Long alunoId, String status);
+    List<Matricula> findByAlunoIdAndStatus(Long alunoId, StatusMatricula status);
 
     boolean existsByAlunoIdAndStatus(Long alunoId, StatusMatricula statusMatricula);
 }

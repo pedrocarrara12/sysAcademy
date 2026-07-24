@@ -64,6 +64,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(erro);
     }
 
+    @ExceptionHandler(MatriculaNotFound.class)
+    public ResponseEntity<ErroResponse> tratarMatriculaNaoEncontrada(MatriculaNotFound exception) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        ErroResponse erro = new ErroResponse(status.value(), status.getReasonPhrase(), exception.getMessage());
+        return ResponseEntity.status(status).body(erro);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErroResponse> tratarErroInterno(Exception exception) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
