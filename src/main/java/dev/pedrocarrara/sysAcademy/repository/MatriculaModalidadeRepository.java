@@ -16,4 +16,10 @@ public interface MatriculaModalidadeRepository extends JpaRepository<MatriculaMo
     List<MatriculaModalidade> findByDataFimIsNull();
 
     Optional<MatriculaModalidade> findByMatriculaIdAndModalidadeId(Long matriculaId, Long modalidadeId);
+
+    List<MatriculaModalidade> findByMatriculaIdOrderByDataInicioDesc(Long matriculaId);
+
+    Optional<MatriculaModalidade> findByIdAndMatriculaId(Long id, Long matriculaId);
+
+    boolean existsByMatriculaIdAndModalidadeIdAndDataFimIsNull(Long matriculaId, Long modalidadeId);
 }
