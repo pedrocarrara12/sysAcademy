@@ -96,6 +96,19 @@ public class MatriculaModalidadeService {
         );
     }
 
+    @Transactional
+    public void encerrarModalidade(Long matriculaId, Long vinculoId) {
+        MatriculaModalidade vinculo = buscarVinculo(matriculaId, vinculoId);
+
+        if (vinculo.getDataFim() != null) {
+            throw new RegraDeNegocioException(
+                    "Essa modalidade ja foi encerrada."
+            );
+        }
+
+        vinculo.setDataFim(LocalDate.now());
+    }
+
     private Matricula buscarMatricula(Long matriculaId) {
         return matriculaRepository.findById(matriculaId)
                 .orElseThrow(() -> new MatriculaNotFound("Matricula nao encontrada."));

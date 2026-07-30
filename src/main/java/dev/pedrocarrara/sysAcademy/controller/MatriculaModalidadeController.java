@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,5 +56,14 @@ public class MatriculaModalidadeController {
         return ResponseEntity.ok(
                 matriculaModalidadeService.buscarPorId(matriculaId, vinculoId)
         );
+    }
+
+    @PatchMapping("/{vinculoId}/encerrar")
+    public ResponseEntity<Void> encerrarModalidade(
+            @PathVariable Long matriculaId,
+            @PathVariable Long vinculoId
+    ) {
+        matriculaModalidadeService.encerrarModalidade(matriculaId, vinculoId);
+        return ResponseEntity.noContent().build();
     }
 }
