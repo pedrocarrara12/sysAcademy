@@ -1,6 +1,7 @@
 package dev.pedrocarrara.sysAcademy.controller;
 
 import dev.pedrocarrara.sysAcademy.dto.MatriculaFiltro;
+import dev.pedrocarrara.sysAcademy.dto.MatriculaAtualizacaoRequest;
 import dev.pedrocarrara.sysAcademy.dto.MatriculaRequest;
 import dev.pedrocarrara.sysAcademy.dto.MatriculaResponse;
 import dev.pedrocarrara.sysAcademy.service.MatriculaService;
@@ -33,15 +34,23 @@ public class MatriculaController {
     public ResponseEntity<MatriculaResponse> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(matriculaService.buscarPorId(id));
     }
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarMatricula(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
     @PutMapping("/{id}")
-    public ResponseEntity<MatriculaResponse> atualizarMatricula(@PathVariable Long id, @Valid @RequestBody MatriculaRequest matriculaRequest) {
+    public ResponseEntity<MatriculaResponse> atualizarMatricula(
+            @PathVariable Long id,
+            @Valid @RequestBody MatriculaAtualizacaoRequest matriculaRequest
+    ) {
         return ResponseEntity.ok(matriculaService.atualizarMatricula(id, matriculaRequest));
     }
 
+    @PatchMapping("/{id}/encerrar")
+    public ResponseEntity<Void> encerrarMatricula(@PathVariable Long id) {
+        matriculaService.encerrarMatricula(id);
+        return ResponseEntity.noContent().build();
+    }
 
-
+    @PatchMapping("/{id}/cancelar")
+    public ResponseEntity<Void> cancelarMatricula(@PathVariable Long id) {
+        matriculaService.cancelarMatricula(id);
+        return ResponseEntity.noContent().build();
+    }
 }

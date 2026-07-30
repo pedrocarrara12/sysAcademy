@@ -1,14 +1,17 @@
 package dev.pedrocarrara.sysAcademy.service;
 
 import dev.pedrocarrara.sysAcademy.dto.MatriculaFiltro;
+import dev.pedrocarrara.sysAcademy.dto.MatriculaAtualizacaoRequest;
 import dev.pedrocarrara.sysAcademy.dto.MatriculaRequest;
 import dev.pedrocarrara.sysAcademy.dto.MatriculaResponse;
 import dev.pedrocarrara.sysAcademy.entity.Aluno;
 import dev.pedrocarrara.sysAcademy.entity.Matricula;
+import dev.pedrocarrara.sysAcademy.entity.MatriculaModalidade;
 import dev.pedrocarrara.sysAcademy.enums.StatusMatricula;
 import dev.pedrocarrara.sysAcademy.exception.MatriculaNotFound;
 import dev.pedrocarrara.sysAcademy.exception.RegraDeNegocioException;
 import dev.pedrocarrara.sysAcademy.repository.AlunoRepository;
+import dev.pedrocarrara.sysAcademy.repository.MatriculaModalidadeRepository;
 import dev.pedrocarrara.sysAcademy.repository.MatriculaRepository;
 import dev.pedrocarrara.sysAcademy.specification.MatriculaSpecification;
 import org.springframework.data.domain.Page;
@@ -24,10 +27,16 @@ public class MatriculaService {
 
     private final MatriculaRepository matriculaRepository;
     private final AlunoRepository alunoRepository;
+    private final MatriculaModalidadeRepository matriculaModalidadeRepository;
 
-    public MatriculaService(MatriculaRepository matriculaRepository, AlunoRepository alunoRepository) {
+    public MatriculaService(
+            MatriculaRepository matriculaRepository,
+            AlunoRepository alunoRepository,
+            MatriculaModalidadeRepository matriculaModalidadeRepository
+    ) {
         this.matriculaRepository = matriculaRepository;
         this.alunoRepository = alunoRepository;
+        this.matriculaModalidadeRepository = matriculaModalidadeRepository;
     }
 
     @Transactional
@@ -98,46 +107,60 @@ public class MatriculaService {
     }
 
     @Transactional
-    public MatriculaResponse atualizarMatricula(Long id, MatriculaRequest matriculaRequest) {
+    public MatriculaResponse atualizarMatricula(
+            Long id,
+            MatriculaAtualizacaoRequest matriculaRequest
+    ) {
         Matricula matricula = buscarEntidadePorId(id);
         validarMatriculaAtiva(matricula);
 
-        Aluno aluno = alunoRepository.findById(matriculaRequest.idAluno())
-                .orElseThrow(() -> new RegraDeNegocioException("Aluno nao encontrado"));
-
-        validarAlunoSemOutraMatriculaAtiva(matriculaRequest.idAluno(), id);
-
-        matricula.setAluno(aluno);
         matricula.setDiaVencimento(matriculaRequest.diaVencimento());
 
         return MatriculaResponse.fromEntity(matricula);
     }
 
-    private void validarAlunoSemMatriculaAtiva(Long alunoId) {
-        validarAlunoSemOutraMatriculaAtiva(alunoId, null);
+    @Transactional
+    public void encerrarMatricula(Long id) {
+        Matricula matricula = buscarEntidadePorId(id);
+        validarMatriculaAtiva(matricula);
+        finalizarMatricula(matricula, StatusMatricula.ENCERRADA);
     }
 
-    private void validarAlunoSemOutraMatriculaAtiva(Long alunoId, Long matriculaIdIgnorada) {
+    @Transactional
+    public void cancelarMatricula(Long id) {
+        Matricula matricula = buscarEntidadePorId(id);
+        validarMatriculaAtiva(matricula);
+        finalizarMatricula(matricula, StatusMatricula.CANCELADA);
+    }
+
+    private void validarAlunoSemMatriculaAtiva(Long alunoId) {
         boolean possuiMatriculaAtiva = matriculaRepository.existsByAlunoIdAndStatus(
                 alunoId,
                 StatusMatricula.ATIVA
         );
 
         if (possuiMatriculaAtiva) {
-            boolean matriculaAtivaPermitida = matriculaIdIgnorada != null
-                    && matriculaRepository.findByAlunoIdAndStatus(alunoId, StatusMatricula.ATIVA)
-                            .stream()
-                            .allMatch(matricula -> matricula.getId().equals(matriculaIdIgnorada));
+            throw new RegraDeNegocioException("O aluno ja possui uma matricula ativa.");
+        }
+    }
 
-            if (!matriculaAtivaPermitida) {
-                throw new RegraDeNegocioException("O aluno ja possui uma matricula ativa.");
-            }
+    private void finalizarMatricula(Matricula matricula, StatusMatricula novoStatus) {
+        LocalDate dataFinalizacao = LocalDate.now();
+
+        matricula.setStatus(novoStatus);
+        matricula.setDataEncerramento(dataFinalizacao);
+
+        for (MatriculaModalidade vinculo :
+                matriculaModalidadeRepository.findByMatriculaIdAndDataFimIsNull(matricula.getId())) {
+            vinculo.setDataFim(dataFinalizacao);
         }
     }
 
     private void validarMatriculaAtiva(Matricula matricula) {
         if (matricula.getStatus() != StatusMatricula.ATIVA) {
-            throw new RegraDeNegocioException("Somente matriculas ativas podem ser atualizadas.");
+            throw new RegraDeNegocioException(
+                    "A matricula precisa estar ativa para realizar esta operacao."
+            );
         }
     }
 

@@ -1,15 +1,8 @@
 package dev.pedrocarrara.sysAcademy.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import ch.qos.logback.core.status.Status;
+import dev.pedrocarrara.sysAcademy.enums.StatusFatura;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -38,8 +31,9 @@ public class FaturaMatricula {
     @Column(name = "data_cancelamento")
     private LocalDate dataCancelamento;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private String status;
+    private StatusFatura status;
 
     public FaturaMatricula() {
     }
@@ -47,7 +41,7 @@ public class FaturaMatricula {
     @PrePersist
     public void prePersist() {
         if (status == null) {
-            status = "ABERTA";
+            this.status = StatusFatura.ABERTA;
         }
     }
 
@@ -99,11 +93,11 @@ public class FaturaMatricula {
         this.dataCancelamento = dataCancelamento;
     }
 
-    public String getStatus() {
+    public StatusFatura getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(StatusFatura status) {
         this.status = status;
     }
 }
